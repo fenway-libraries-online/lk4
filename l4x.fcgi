@@ -6,7 +6,7 @@ use warnings;
 use lib 'lib';
 
 use L4x;
-use CGI::Fast qw(:cgi);
+use CGI::Fast qw(:cgi escapeHTML);
 
 my %status2msg = (
     200 => 'OK',
@@ -15,7 +15,7 @@ my %status2msg = (
 );
 
 my $l4x = L4x->new(
-    'config_file' => 'l4x.conf',
+    'config_file' => 'conf/l4x.conf',
     'data_dir'    => 'data',
 );
 
@@ -72,6 +72,7 @@ EOS
 </body>
 </html>
 EOS
+    my $length = length $content;
     print <<"EOS";
 HTTP/1.0 200 OK
 Content-Type: text/html; charset=UTF-8
