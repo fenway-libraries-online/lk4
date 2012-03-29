@@ -1,0 +1,192 @@
+=head1 NAME
+
+L4x - rule- and data-based transformation of URLs
+
+=head1 SYNOPSIS
+
+	use L4x;
+	$l4x = L4x->new(
+	    'config_file' => $conf,
+	    'data_dir'    => $dir,
+	    ...
+	);
+    $l4x->let('$foo' => 'bar');
+    $l4x->let('foo(bar)' => \&baz);
+	%result = $l4x->resolve('/absolute/uri/path');
+
+=head1 DESCRIPTION
+
+B<L4x> resolves URIs into target URIs.
+
+It is suitable for use in a general link redirection service.
+
+=head1 METHODS
+
+=over 4
+
+=item B<new>
+
+	$l4x = L4x->new(
+	    'config_file' => $conf,
+	    'data_dir'    => $dir,
+	    ...
+	);
+
+Which config files are read may be overridden by specifying C<config_file> or
+C<config_dir> arguments (or both):
+
+    $l4x = L4x->new(
+        'config_file' => '/etc/l4x/foo/main.conf',
+        'config_dir'  => '/etc/l4x/foo/includes',
+    );
+
+If B<config_file> is used but not B<config_dir>, then B<config_dir> with C<.d>
+substituted for C<.conf> will be assumed.
+
+The names of config files within I<config_dir> B<must> match the glob C<*.conf>
+or they will be ignored.
+
+=item B<read_config_file>
+
+    $l4x->read_config_file($f);
+
+=item B<let>
+
+    $l4x->let('$foo' => 'bar');
+    $l4x->let('foo(bar)' => \&baz);
+
+Define a variable or function.  This is not normally required, as you can accomplish the same thing
+using a Perl function in a 
+=item B<resolve>
+
+    %result = $l4x->resolve($uri);
+    if (!$result{ok}) {
+    	print "Error: $result{message}\n";
+    }
+    elsif (!$result{uri}) {
+    	print "URI: $result{uri}\n";
+    }
+    elsif ($result{menu}) {
+    	print "Menu: $result{menu}{title}\n";
+    }
+
+=back
+
+=head1 DIAGNOSTICS
+
+A list of every error and warning message that the module can generate
+(even the ones that will "never happen"), with a full explanation of each
+problem, one or more likely causes, and any suggested remedies.
+
+
+=head1 CONFIGURATION
+
+Config files contain this stuff...
+
+=over 4
+
+=item B<under>
+
+C<under> introduces a scope under which URIs beginning with a particular prefix may be
+resolved.  For example:
+
+    under /doc {
+    	route /<docid>        to http://public.example.org/read?docID=<docid>
+    	route /<docid>/secret to http://secret.example.org/read?docID=<docid>
+    }
+
+This would route C</doc/12345> to C<< http://public.example.org/read?docID=12345 >>
+and C</doc/98765/secret> to C<< http://secret.example.org/read?docID=98765 >>.
+
+An C<under> block may contain any directive, not just C<route>; those
+directives will apply only to URIs that fall under the given prefix.
+
+=item B<function>
+
+A function takes zero or more inputs and produces an output.  You can use this,
+for example, to map library names to proxy prefixes
+
+    function base(name) {
+        main  -> http://example.net
+        smith -> http://smith.example.net
+        jones -> http://jones.example.net
+    }
+    route /foo/<name>/<docid> to <base(name)>/foo/<docid>
+
+Functions may be defined in a data file:
+
+    function new(docid) from doc-id-mapping
+    route /doc/<docid> to http://new.example.org/doc/<new(docid)>
+
+Functions may be written in Perl:
+
+    function qux(docid) :perl {
+        my ($docid) = @_;
+        my $uri = ...;
+        return $uri;
+    }
+
+=item B<menu>
+
+A menu is a list of URIs to present to the user.  Example:
+
+    under /doc {
+        menu pdf_or_text(docid) "Alternatives" {
+            /pdf/<docid>.pdf   "PDF"
+            /txt/<docid>.txt   "Text"
+        }
+        route /<docid> to pdf_or_text(docid)
+    }
+
+You can also write menu generators in Perl:
+
+    menu foo "Foobar" :perl {
+        my %arg = @_;
+        my @items = (
+            { uri => '...', label => '...' },
+            ...
+        );
+        return {
+            title => $arg{title},
+            items => \@items,
+        }
+    }
+
+This is the only way to get menus with variable numbers of items, or with
+dynamic titles.
+
+=back
+
+=head1 FILES
+
+Default config files are as follows:
+
+=over 4
+
+=item B</etc/l4x/l4x.conf>
+
+=item B</etc/l4x/l4x.d/*.conf>
+
+=back
+
+=head1 BUGS
+
+Functions must be called using arguments whose names match the formal parameter
+names with which the function was declared.  Ditto menus.
+
+=head1 AUTHOR
+
+Paul Hoffman E<lt>paul@flo.orgE<gt>.
+
+=head1 LICENCE AND COPYRIGHT
+
+Copyright 2012 Fenway Libraries Online.
+
+This module is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself. See perldoc perlartistic.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+=cut
