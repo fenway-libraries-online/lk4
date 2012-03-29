@@ -1,0 +1,43 @@
+#!/usr/bin/perl 
+
+use strict;
+use warnings;
+
+use DB_File;
+
+use constant KEYJOINER => "\x1c";
+
+my ($verbose, $clear);
+
+# GetOptions(
+#     ...
+# ) or exit usage();
+
+my ($f) = @ARGV;
+if (-e $f) {
+    open STDIN, '<', $f or die "Can't open $f: $!";
+}
+else {
+	print STDERR "Reading data from standard input\n" if $verbose;
+}
+
+my %db;
+my $fdest = "$f.db";
+my $ftemp = "$f.temp.$$.db";
+
+tie %db, 'DB_File', $ftemp, O_CREAT|O_RDWR, 0666, $DB_HASH;
+%db = () if $clear;
+
+while (<STDIN>) {
+    chomp;
+    my @key = split /\t/;
+    my $val = pop @key;
+    $db{join(KEYJOINER, @key)} = $val;
+}
+
+if (-e $fdest) {
+	link $fdest, "$fdest.bak";
+    unlink $fdest;
+}
+rename $ftemp, $fdest;
+
