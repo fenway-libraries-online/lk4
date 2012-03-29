@@ -79,15 +79,15 @@ sub resolve {
     my $forwards = $under->{'forwards'};
     my %result = ('ok' => 0);
     foreach (@$forwards) {
-        my $result;
+    	my $result;
         eval {
             $result = $_->($under, $path_info, $query_string);
             if (defined $result) {
-                $result{'ok'} = 1;
-                if (ref($result) eq 'HASH') {
-                    $result{'menu'} = $result;
-                }
-                else {
+            	$result{'ok'} = 1;
+            	if (ref($result) eq 'HASH') {
+            		$result{'menu'} = $result;
+            	}
+            	else {
                     $result{'uri'} = $result;
                 }
             }
@@ -119,6 +119,9 @@ sub read_config_file {
         if (/^let (\S+) = (.*)$/) {
             $contexts->[-1]->{'context'}{$1} = $self->compile_general_expression($2);
         }
+        elsif (/^list (\S+) {$/) {
+            $contexts->[-1]->{'context'}{$1} = $self->compile_list($fh);
+        }
         elsif (/^under (\S+) {$/) {
             my $context = $config->{$1} = {
                 'name' => $1,
@@ -143,12 +146,16 @@ sub read_config_file {
             $contexts->[-1]->{'context'}{$key} = $code;
         }
         elsif (/^menu (\S+) {/) {
-            my ($key, $code) = $self->compile_menu($1, $fh);
-            $contexts->[-1]->{'context'}{$key} = $code;
+        	my ($key, $code) = $self->compile_menu($1, $fh);
+        	$contexts->[-1]->{'context'}{$key} = $code;
+        }
+        elsif (/^menu (\S+) "(.+)" {/) {
+        	my ($key, $code) = $self->compile_menu_old($1, $2, $fh);
+        	$contexts->[-1]->{'context'}{$key} = $code;
         }
         elsif (/^menu (\S+) "(.+)" :perl {/) {
-            my ($key, $code) = $self->compile_perl_menu($1, $2, $fh);
-            $contexts->[-1]->{'context'}{$key} = $code;
+        	my ($key, $code) = $self->compile_perl_menu($1, $2, $fh);
+        	$contexts->[-1]->{'context'}{$key} = $code;
         }
         elsif (/^forward(?: \+(\d\d\d))? (\S+) to (.+)$/) {
             # forward /foo to http://example.com/bar
@@ -198,27 +205,53 @@ sub compile_data_reader {
 }
 
 sub compile_menu {
-    my ($self, $spec, $fh) = @_;
+    my ($snuelf, $spec, $fh) = @_;
     my ($key, @params) = parse_spec($spec);
-    my %menu;
+    my ($title, $template, $generator);
     my @menu;
     while (<$fh>) {
         normalize($_);
         if (/^}$/) {
-            last;
+        	last;
         }
-        elsif (/^(title|template) (.+)$/) {
-            $menu{$1} = $2;
+        elsif (/^title (.+)$/) {
+        	$title = $1;
         }
-        elsif (/^item (\S+) (.+)$/) {
-            my ($uri, $label) = ($1, $2);
-            push @menu, {
-                'uri' => $self->compile_general_expression($uri),
-                'label' => $label,
+        elsif (/^template (.+)$/) {
+        	$template = $1;
+        }
+        elsif (/^for (.+) in (.+) {$/) {
+        	my ($var, $list) = ($1, $2);
+        	my ($uri, $label);
+        	while (<$fh>) {
+                normalize($_);
+                last if /^}$/;
+                if (/^uri (\S+)$/) {
+                	$uri = $1;
+                }
+                elsif (/^label (\S+)$/) {
+                	$label = $1;
+                }
+                else {
+                	die;
+                }
+            }
+            my $contexts = $self->{'contexts'};
+            $generator = sub {
+            	foreach my $elem (@$list) {
+                    push @$contexts, {
+                        'name' => $spec,
+                        'context' => {
+                            $var => $elem,
+                        },
+                    };
+                    ...
+                    pop @$contexts;
+                }
             };
         }
         else {
-            die;
+        	die;
         }
     }
     return $key, sub {
@@ -226,14 +259,52 @@ sub compile_menu {
         my ($c) = @_;
         my @items;
         foreach (@menu) {
-            my %item = (
-                'uri' => evaluate($_->{uri}, $c),
-                'label' => $_->{'label'},
-            );
+        	my %item = (
+        	    'uri' => evaluate($_->{uri}, $c),
+        	    'label' => $_->{'label'},
+        	);
             push @items, \%item;
         }
         return {
-            %menu,
+            'title' => $title,
+            'items' => \@items,
+        };
+    };
+}
+
+sub compile_menu_old {
+    my ($self, $spec, $title, $fh) = @_;
+    my ($key, @params) = parse_spec($spec);
+    my @menu;
+    while (<$fh>) {
+        normalize($_);
+        if (/^}$/) {
+        	last;
+        }
+        elsif (/^(\S+) "(.+)"$/) {
+        	my ($uri, $label) = ($1, $2);
+        	push @menu, {
+                'uri' => $self->compile_general_expression($uri),
+                'label' => $label,
+            };
+        }
+        else {
+        	die;
+        }
+    }
+    return $key, sub {
+        my @debug = ($spec, $key, @params);  # Just for debugging
+        my ($c) = @_;
+        my @items;
+        foreach (@menu) {
+        	my %item = (
+        	    'uri' => evaluate($_->{uri}, $c),
+        	    'label' => $_->{'label'},
+        	);
+            push @items, \%item;
+        }
+        return {
+            'title' => $title,
             'items' => \@items,
         };
     };
@@ -263,7 +334,7 @@ sub compile_forward {
     my $contexts = $self->{'contexts'};
     foreach ($from =~ m{([^/]+)}g) {
         if (/^([^<>]*)<(.+)>([^<>]*)$/) {
-            my ($pfx, $key, $sfx) = ($1, $2, $3);
+        	my ($pfx, $key, $sfx) = ($1, $2, $3);
             push @keys, $key;
             my $str = $contexts->[-1]->{'patterns'}{$1} ||= '[^/]+';
             $spec .= '/' . $pfx . '(' . $str . ')' . $sfx;
@@ -275,13 +346,13 @@ sub compile_forward {
     }
     my $value;
     if ($to =~ s/^menu //) {
-        $value = $self->compile_menu_expression($to);
+    	$value = $self->compile_menu_expression($to);
     }
     elsif ($to =~ s/^file //) {
-        $value = $self->compile_file_expression($to);
+    	$value = $self->compile_file_expression($to);
     }
     elsif ($to =~ s/^(uri )?//) {
-        $value = $self->compile_general_expression($to);
+    	$value = $self->compile_general_expression($to);
     }
     $spec = qr/^$spec$/;
     return sub {
@@ -305,7 +376,7 @@ sub compile_forward {
 sub compile_menu_expression {
     my ($self, $str) = @_;
     if ($str =~ /^(\w+(?:\((.+)\))?)$/) {
-        my $key = $1;
+    	my $key = $1;
         return sub {
             my @debug = ($str);
             my ($c) = @_;
@@ -317,7 +388,7 @@ sub compile_menu_expression {
         };
     }
     else {
-        die;
+    	die;
     }
 }
 
@@ -345,7 +416,7 @@ sub find_data_file {
         $ddir = $ddir->($contexts->[0]->{'context'}) if ref $ddir;
     }
     else {
-        $ddir = $self->{'data_dir'};
+    	$ddir = $self->{'data_dir'};
     }
     $ddir =~ s{/+$}{};
     return $ddir . '/' . $f;
@@ -381,6 +452,17 @@ sub read_inline_data {
         $data{join(KEYJOINER, @key)} = $val;
     }
     return \%data;
+}
+
+sub compile_list {
+    my ($fh) = @_;
+    my @items;
+    while (<$fh>) {
+        normalize($_);
+        last if /^}$/;
+        push @items, $_;
+    }
+    return \@items;
 }
 
 sub compile_general_expression {
@@ -478,7 +560,7 @@ sub compile_function_inline {
 }
 
 sub ok {
-    my ($status, $msg) = @_;
+	my ($status, $msg) = @_;
     return (
         'ok' => 1,
         'status' => sprintf('%03d', $status),
@@ -487,7 +569,7 @@ sub ok {
 }
 
 sub err {
-    my ($status, $msg) = @_;
+	my ($status, $msg) = @_;
     return (
         'ok' => 0,
         'status' => sprintf('%03d', $status),
