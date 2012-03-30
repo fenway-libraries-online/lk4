@@ -64,7 +64,7 @@ accomplish the same thing using a Perl function in a config file.
     if (!$result{ok}) {
         print "Error: $result{message}\n";
     }
-    elsif (!$result{uri}) {
+    elsif ($result{uri}) {
         print "URI: $result{uri}\n";
     }
     elsif ($result{menu}) {
