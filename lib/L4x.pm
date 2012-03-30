@@ -116,8 +116,9 @@ sub read_config_file {
     while (<$fh>) {
         normalize($_);
         next if /^#|^$/;
+        my $c = $contexts->[-1]->{'context'};
         if (/^let (\S+) = (.*)$/) {
-            $contexts->[-1]->{'context'}{$1} = $self->compile_general_expression($2);
+            $c->{$1} = $self->compile_general_expression($2);
         }
         elsif (/^under (\S+) {$/) {
             my $context = $config->{$1} = {
@@ -132,23 +133,27 @@ sub read_config_file {
         }
         elsif (/^function (\S+) :file (\S+)/) {
             my ($key, $code) = $self->compile_function_from_file($1, $2);
-            $contexts->[-1]->{'context'}{$key} = $code;
+            $c->{$key} = $code;
         }
         elsif (/^function (\S+) {$/) {
             my ($key, $code) = $self->compile_function_inline($1, $fh);
-            $contexts->[-1]->{'context'}{$key} = $code;
+            $c->{$key} = $code;
         }
         elsif (/^function (\S+) :perl {$/) {
             my ($key, $code) = $self->compile_perl_function_inline($1, $fh);
-            $contexts->[-1]->{'context'}{$key} = $code;
+            $c->{$key} = $code;
+        }
+        elsif (/^list (\S+) {$/) {
+            my ($key, $code) = $self->compile_list($1, $fh);
+            $c->{$key} = $code;
         }
         elsif (/^menu (\S+) {/) {
             my ($key, $code) = $self->compile_menu($1, $fh);
-            $contexts->[-1]->{'context'}{$key} = $code;
+            $c->{$key} = $code;
         }
         elsif (/^menu (\S+) "(.+)" :perl {/) {
             my ($key, $code) = $self->compile_perl_menu($1, $2, $fh);
-            $contexts->[-1]->{'context'}{$key} = $code;
+            $c->{$key} = $code;
         }
         elsif (/^forward(?: \+(\d\d\d))? (\S+) to (.+)$/) {
             # forward /foo to http://example.com/bar
@@ -201,7 +206,9 @@ sub compile_menu {
     my ($self, $spec, $fh) = @_;
     my ($key, @params) = parse_spec($spec);
     my %menu;
-    my @menu;
+    my @items;
+    my ($var, $list);
+    my ($uri, $label);
     while (<$fh>) {
         normalize($_);
         if (/^}$/) {
@@ -212,31 +219,63 @@ sub compile_menu {
         }
         elsif (/^item (\S+) (.+)$/) {
             my ($uri, $label) = ($1, $2);
-            push @menu, {
+            push @items, {
                 'uri' => $self->compile_general_expression($uri),
                 'label' => $label,
             };
+        }
+        elsif (/^for (\S+) in (\S+) {$/) {
+            ($var, $list) = ($1, $2);
+            while (<$fh>) {
+                normalize($_);
+                if (/^}$/) {
+                    last;
+                }
+                elsif (/^item (\S+) (.+)$/) {
+                    ($uri, $label) = ($1, $2);
+                }
+            }
+            die "Item not defined" if !defined $uri;
+            $uri = $self->compile_general_expression($uri);
+            $label = $self->compile_general_expression($label);
         }
         else {
             die;
         }
     }
-    return $key, sub {
-        my @debug = ($spec, $key, @params);  # Just for debugging
-        my ($c) = @_;
-        my @items;
-        foreach (@menu) {
-            my %item = (
-                'uri' => evaluate($_->{uri}, $c),
-                'label' => $_->{'label'},
-            );
-            push @items, \%item;
-        }
-        return {
-            %menu,
-            'items' => \@items,
+    if (@items) {
+        return $key, sub {
+            my @debug = ($spec, $key, @params);  # Just for debugging
+            my ($c) = @_;
+            $_->{'uri'} = evaluate($_->{uri}, $c) for @items;
+            return {
+                %menu,
+                'items' => \@items,
+            };
         };
-    };
+    }
+    else {
+        return $key, sub {
+            my @debug = ($spec, $key, @params, $var, $list, $uri, $label);  # Just for debugging
+            my ($c) = @_;
+            my @list = @{ $c->{$list} || die "No such list: $list" };
+            if (!@items) {
+                my $prev = $c->{$var};
+                @items = map {
+                    $c->{$var} = $_;
+                    {
+                        'uri' => evaluate($uri, $c),
+                        'label' => evaluate($label, $c),
+                    }
+                } @list;
+                $c->{$var} = $prev;
+            }
+            return {
+                %menu,
+                'items' => \@items,
+            }
+        };
+    }
 }
 
 sub compile_perl_menu {
@@ -441,6 +480,17 @@ sub compile_perl_function_inline {
         $inner_sub->(@args);
     };
     #return eval $src;
+}
+
+sub compile_list {
+    my ($self, $name, $fh) = @_;
+    my @elems;
+    while (<$fh>) {
+        normalize($_);
+        last if /^}$/;
+        push @elems, $_;
+    }
+    return $name, \@elems;
 }
 
 # --- Private methods
