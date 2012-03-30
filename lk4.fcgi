@@ -25,7 +25,7 @@ my $lk4 = WWW::Lk4->new(%config);
 if (@ARGV == 1) {
 	# Debugging mode: lk4.fcgi /uri/path/required/here?optional&query&string
 	# Make CGI::Fast happy by ensuring the command-line arg ends in ?
-	$ARGV[0] =~ s/\??$/?/;
+	$ARGV[0] .= '?' if $ARGV[0] !~ /\?/;
 }
 
 while (my $q = CGI::Fast->new) {
