@@ -38,8 +38,9 @@ sub resolve {
     # And the query string:
     #   ?url=http://example.com/foo/bar
     my ($path_info, $query_string);
-    if ($req =~ /^([^?]*)(?:\?(.*))?/) {
+    if ($req =~ /^([^?]*)(?:(\?.*))?/) {
         ($path_info, $query_string) = ($1, $2);
+        $query_string = '' if !defined $query_string;
     }
     else {
         ($path_info, $query_string) = ('/', '');
@@ -71,7 +72,7 @@ sub resolve {
         'context' => {
             '$client_ip' => '127.0.0.1',
             '$path_info' => $path_info,
-            '$query_string' => '',
+            '$query_string' => $query_string,
         },
     };
     my $contexts = $self->{'contexts'};
