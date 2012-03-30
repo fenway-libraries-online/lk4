@@ -11,7 +11,7 @@ use constant KEYJOINER => "\x1c";
 
 sub new {
     my ($cls, %arg) = @_;
-    my @contexts;
+    my @contexts = ( { 'name' => '$self', 'context' => {} } );
     my %config;
     my %file2data;
     my $self = bless {
@@ -27,7 +27,7 @@ sub new {
 }
 
 sub resolve {
-    my ($self, $req) = @_;
+    my ($self, $req, %env) = @_;
     # Extract path info components and query string from the requested URI
     # These are normalized to remove extra slashes, etc.
     # For example, this:
@@ -67,16 +67,11 @@ sub resolve {
         last;
     }
     return err(404, "$req :: no forward") if !defined $path_info;
-    my $req_context = {
-        'name' => '$$',
-        'context' => {
-            '$client_ip' => '127.0.0.1',
-            '$path_info' => $path_info,
-            '$query_string' => $query_string,
-        },
-    };
     my $contexts = $self->{'contexts'};
-    push @$contexts, $req_context;
+    push @$contexts, {
+        'name' => '$request',
+        'context' => \%env,
+    };
     my $forwards = $under->{'forwards'};
     my %result = ('ok' => 0);
     foreach (@$forwards) {
@@ -104,8 +99,8 @@ sub resolve {
 }
 
 sub let {
-    my ($self, $name, $val) = @_;
-    $self->{'contexts'}->[-1]->{'context'}{$name} = $val;
+	my ($self, %arg) = @_;
+    $self->{'contexts'}->[0]->{'context'}{$_} = $arg{$_} for keys %arg;
     return $self;
 }
 

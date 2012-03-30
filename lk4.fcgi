@@ -7,6 +7,7 @@ use lib 'lib';
 
 use WWW::Lk4;
 use CGI::Fast qw(:cgi escapeHTML);
+use CGI::Cookie;
 
 my %status2msg = (
     200 => 'OK',
@@ -29,8 +30,8 @@ if (@ARGV == 1) {
 }
 
 while (my $q = CGI::Fast->new) {
-	my $req = $q->url('-absolute' => 1, '-path_info' => 1, '-query' => 1);
-    my %result = $lk4->resolve($req);
+    my %env = request_environment($q);
+    my %result = $lk4->resolve($env{'$url'}, %env);
     my ($ok, $status, $uri, $menu) = @result{qw(ok status uri menu)};
 	if (defined $uri) {
 		print_redirect($uri, $status);
@@ -100,3 +101,26 @@ sub print_error {
     print "\n";
 }
 
+sub request_environment {
+	my ($q) = @_;
+	my $uri = $q->url('-absolute' => 1, '-path_info' => 1, '-query' => 1);
+	my @params = map { '$param(' . $_ . ')', $q->param($_) } $q->param;
+	my %cookies = CGI::Cookie->fetch;
+	my @cookies = map { '$cookie(' . $_ . ')', $cookies{$_}->value } keys %cookies;
+	return (
+        '$query_string' => '?'.$q->query_string,
+        '$query_string_unescaped'
+                        => '?'.unescape($q->query_string),
+        '$remote_addr'  => $q->remote_addr,
+        '$path_info'    => $q->path_info,
+        '$url'          => $uri,
+        @params,
+    );
+}
+
+sub unescape {
+    my ($str) = @_;
+    $str =~ s/%([0-9A-Fa-f]{2})/pack('H*', $1)/eg;
+    $str =~ s/;/&/g;
+    return $str;
+}
