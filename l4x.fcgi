@@ -14,10 +14,13 @@ my %status2msg = (
     404 => 'Not found',
 );
 
-my $l4x = L4x->new(
-    'config_file' => 'conf/l4x.conf',
-    'data_dir'    => 'data',
+my %config = (
+    'config_file' => $ENV{'L4X_CONFIG_FILE'} || 'conf/l4x.conf',
+    'data_dir'    => $ENV{'L4X_DATA_DIR'}    || 'data',
 );
+$config{'config_dir'} = $ENV{'L4X_CONFIG_DIR'} if exists $ENV{'L4X_CONFIG_DIR'};
+
+my $l4x = L4x->new(%config);
 
 if (@ARGV == 1) {
 	# Debugging mode: l4x.fcgi /uri/path/required/here?optional&query&string
