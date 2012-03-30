@@ -131,7 +131,7 @@ A menu is a list of URIs to present to the user.  Example:
             item /pdf/<docid>.pdf   "PDF"
             item /txt/<docid>.txt   "Text"
         }
-        forward /<docid> to menu pdf_or_text(docid)
+        forward /<docid> to :menu pdf_or_text(docid)
     }
 
 =back

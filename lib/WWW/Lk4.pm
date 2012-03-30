@@ -302,13 +302,13 @@ sub compile_forward {
         }
     }
     my $value;
-    if ($to =~ s/^menu //) {
+    if ($to =~ s/^:menu //) {
         $value = $self->compile_menu_expression($to);
     }
-    elsif ($to =~ s/^file //) {
+    elsif ($to =~ s/^:file //) {
         $value = $self->compile_file_expression($to);
     }
-    elsif ($to =~ s/^(uri )?//) {
+    elsif ($to =~ s/^(:uri )?//) {
         $value = $self->compile_general_expression($to);
     }
     $spec = qr/^$spec$/;
