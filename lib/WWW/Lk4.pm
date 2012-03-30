@@ -1,4 +1,4 @@
-package Lk4;
+package WWW::Lk4;
 
 use strict;
 use warnings;
@@ -47,7 +47,7 @@ sub resolve {
     $path_info =~ s{/*$}{/};
     $path_info =~ s{/\./}{//}g;
     $path_info =~ tr{/}{/}s;
-    my @path = ($path_info =~ m{(/[^/]+)}g);
+    my @path = ('', $path_info =~ m{(/[^/]+)}g);
 
     # Look for a context under which to redirect
     # For example, we might have this in a config file:
@@ -124,6 +124,7 @@ sub read_config_file {
             my $context = $config->{$1} = {
                 'name' => $1,
                 'context' => {},
+                'patterns' => { '*' => qr/.*/ },
             };
             push @$contexts, $context;
         }
@@ -161,11 +162,8 @@ sub read_config_file {
             my ($status, $from, $to) = ($1, $2, $3);
             push @{ $contexts->[-1]->{'forwards'} ||= [] }, $self->compile_forward($from, $to, $status);
         }
-        # elsif (/^require (\S+) in (.*)/) {
-        #     $contexts->[-1]->{'pattern'}{$1} = $self->compile_list_to_regexp($2);
-        # }
-        # elsif (/^require (\S+) matching (.*)/) {
-        #     $contexts->[-1]->{'pattern'}{$1} = qr/$2/;
+        # elsif (/^match (\S+) to (.*)/) {
+        #     $contexts->[-1]->{'patterns'}{$1} = qr/$2/;
         # }
         else {
             die "Syntax error: $_";
@@ -292,10 +290,14 @@ sub compile_forward {
     my $spec = '';
     my $contexts = $self->{'contexts'};
     foreach ($from =~ m{([^/]+)}g) {
-        if (/^([^<>]*)<(.+)>([^<>]*)$/) {
+        if (/^<\*>$/) {
+            push @keys, '*';
+            $spec .= '/(.*)';
+        }
+        elsif (/^([^<>]*)<(.+)>([^<>]*)$/) {
             my ($pfx, $key, $sfx) = ($1, $2, $3);
             push @keys, $key;
-            my $str = $contexts->[-1]->{'patterns'}{$1} ||= '[^/]+';
+            my $str = $contexts->[-1]->{'patterns'}{$key} ||= '[^/]+';
             $spec .= '/' . $pfx . '(' . $str . ')' . $sfx;
         }
         else {
