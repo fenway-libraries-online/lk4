@@ -11,7 +11,7 @@ use constant KEYJOINER => "\x1c";
 
 sub new {
     my ($cls, %arg) = @_;
-    my @contexts = ( { 'name' => '$self', 'context' => {} } );
+    my @contexts = ( { 'name' => '$self', 'stash' => {} } );
     my %config;
     my %file2data;
     my $self = bless {
@@ -70,7 +70,7 @@ sub resolve {
     my $contexts = $self->{'contexts'};
     push @$contexts, {
         'name' => '$request',
-        'context' => \%env,
+        'stash' => \%env,
     };
     my $forwards = $under->{'forwards'};
     my %result = ('ok' => 0);
@@ -100,7 +100,7 @@ sub resolve {
 
 sub let {
 	my ($self, %arg) = @_;
-    $self->{'contexts'}->[0]->{'context'}{$_} = $arg{$_} for keys %arg;
+    $self->{'contexts'}->[0]->{'stash'}{$_} = $arg{$_} for keys %arg;
     return $self;
 }
 
@@ -112,14 +112,14 @@ sub read_config_file {
     while (<$fh>) {
         normalize($_);
         next if /^#|^$/;
-        my $c = $contexts->[-1]->{'context'};
+        my $stash = $contexts->[-1]->{'stash'};
         if (/^let (\S+) = (.*)$/) {
-            $c->{$1} = $self->compile_general_expression($2);
+            $stash->{$1} = $self->compile_general_expression($2);
         }
         elsif (/^under (\S+) {$/) {
             my $context = $config->{$1} = {
                 'name' => $1,
-                'context' => {},
+                'stash' => {},
                 'patterns' => {},
             };
             push @$contexts, $context;
@@ -130,27 +130,27 @@ sub read_config_file {
         }
         elsif (/^function (\S+) :file (\S+)/) {
             my ($key, $code) = $self->compile_function_from_file($1, $2);
-            $c->{$key} = $code;
+            $stash->{$key} = $code;
         }
         elsif (/^function (\S+) {$/) {
             my ($key, $code) = $self->compile_function_inline($1, $fh);
-            $c->{$key} = $code;
+            $stash->{$key} = $code;
         }
         elsif (/^function (\S+) :perl {$/) {
             my ($key, $code) = $self->compile_perl_function_inline($1, $fh);
-            $c->{$key} = $code;
+            $stash->{$key} = $code;
         }
         elsif (/^list (\S+) {$/) {
             my ($key, $code) = $self->compile_list($1, $fh);
-            $c->{$key} = $code;
+            $stash->{$key} = $code;
         }
         elsif (/^menu (\S+) {/) {
             my ($key, $code) = $self->compile_menu($1, $fh);
-            $c->{$key} = $code;
+            $stash->{$key} = $code;
         }
         elsif (/^menu (\S+) "(.+)" :perl {/) {
             my ($key, $code) = $self->compile_perl_menu($1, $2, $fh);
-            $c->{$key} = $code;
+            $stash->{$key} = $code;
         }
         elsif (/^forward(?: \+(\d\d\d))? (\S+) to (.+)$/) {
             # forward /foo to http://example.com/bar
@@ -318,7 +318,7 @@ sub compile_forward {
         my @m = ( $path_info =~ $spec );
         return if !@m;
         my @k = @keys;
-        my %context = map { %{ $_->{'context'} } } (@$contexts, $under);
+        my %context = map { %{ $_->{'stash'} } } (@$contexts, $under);
         while (@k && @m) {
             my $k = shift @k;
             my $m = shift @m;
@@ -368,9 +368,9 @@ sub find_data_file {
     my ($self, $f) = @_;
     return $f if $f =~ m{^/};
     my $contexts = $self->{'contexts'};
-    my $ddir = $contexts->[0]->{'context'}->{'data_dir'};
+    my $ddir = $contexts->[0]->{'stash'}->{'data_dir'};
     if (defined $ddir) {
-        $ddir = $ddir->($contexts->[0]->{'context'}) if ref $ddir;
+        $ddir = $ddir->($contexts->[0]->{'stash'}) if ref $ddir;
     }
     else {
         $ddir = $self->{'data_dir'};
@@ -487,9 +487,9 @@ sub compile_list {
 #
 sub load_config {
     my ($self) = @_;
-    my $root = { 'name' => '', 'context' => {} };
+    my $root = { 'name' => '', 'stash' => {} };
     $self->{'config'} = { '' => $root };
-    $self->{'contexts'} = [ $root ];
+    push @{ $self->{'contexts'} }, $root;
     my $cfile = $self->{'config_file'};
     my $cdir  = $self->{'config_dir'};
     if (!defined $cdir) {
