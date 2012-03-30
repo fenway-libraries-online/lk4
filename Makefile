@@ -14,13 +14,13 @@ build:
 
 install: install-perl-lib install-perl-doc install-conf install-data install-bin install-doc
 
-install-perl-lib: lib/Lk4.pm
-	mkdir -p $(INSTALL_PERL_LIB)/
-	cp -p $< $(INSTALL_PERL_LIB)/
+install-perl-lib: lib/WWW/Lk4.pm
+	mkdir -p $(INSTALL_PERL_LIB)/WWW
+	cp -p $< $(INSTALL_PERL_LIB)/WWW/
 
-install-perl-doc: lib/Lk4.pod
-	mkdir -p $(INSTALL_PERL_LIB)/
-	cp -p $< $(INSTALL_PERL_LIB)/
+install-perl-doc: lib/WWW/Lk4.pod
+	mkdir -p $(INSTALL_PERL_LIB)/WWW
+	cp -p $< $(INSTALL_PERL_LIB)/WWW/
 
 install-conf: conf
 	mkdir -p $(INSTALL_LK4)/conf

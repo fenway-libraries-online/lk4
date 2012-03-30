@@ -5,7 +5,7 @@ use warnings;
 
 use lib 'lib';
 
-use Lk4;
+use WWW::Lk4;
 use CGI::Fast qw(:cgi escapeHTML);
 
 my %status2msg = (
@@ -20,7 +20,7 @@ my %config = (
 );
 $config{'config_dir'} = $ENV{'LK4_CONFIG_DIR'} if exists $ENV{'LK4_CONFIG_DIR'};
 
-my $lk4 = Lk4->new(%config);
+my $lk4 = WWW::Lk4->new(%config);
 
 if (@ARGV == 1) {
 	# Debugging mode: lk4.fcgi /uri/path/required/here?optional&query&string

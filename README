@@ -1,8 +1,8 @@
 Lk4 is a simple but powerful link forwarding utility.  It consists of a Perl
-module (Lk4.pm) and a FastCGI script that together respond to HTTP requests
-with the appropriate redirection.  Configuration is done using a simple config
-files and may be driven by look-up tables (flat text files or BerkeleyDB files)
-as well.
+module (WWW::Lk4.pm) and a FastCGI script that together respond to HTTP
+requests with the appropriate redirection.  Configuration is done using a
+simple config files and may be driven by look-up tables (flat text files or
+BerkeleyDB files) as well.
 
 ________________________________________________________________________________
 INSTALLING

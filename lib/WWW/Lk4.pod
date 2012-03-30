@@ -1,11 +1,11 @@
 =head1 NAME
 
-Lk4 - rule- and data-based transformation of URLs
+WWW::Lk4 - rule- and data-based transformation of URLs
 
 =head1 SYNOPSIS
 
-    use Lk4;
-    $lk4 = Lk4->new(
+    use WWW::Lk4;
+    $lk4 = WWW::Lk4->new(
         'config_file' => $conf,
         'data_dir'    => $dir,
         ...
@@ -16,7 +16,7 @@ Lk4 - rule- and data-based transformation of URLs
 
 =head1 DESCRIPTION
 
-B<Lk4> resolves URIs into target URIs.
+B<WWW::Lk4> resolves URIs into target URIs.
 
 It is suitable for use in a general link redirection service.
 
@@ -26,7 +26,7 @@ It is suitable for use in a general link redirection service.
 
 =item B<new>
 
-    $lk4 = Lk4->new(
+    $lk4 = WWW::Lk4->new(
         'config_file' => $conf,
         'data_dir'    => $dir,
         ...
@@ -35,7 +35,7 @@ It is suitable for use in a general link redirection service.
 Which config files are read may be overridden by specifying C<config_file> or
 C<config_dir> arguments (or both):
 
-    $lk4 = Lk4->new(
+    $lk4 = WWW::Lk4->new(
         'config_file' => '/etc/lk4/foo/main.conf',
         'config_dir'  => '/etc/lk4/foo/includes',
     );
