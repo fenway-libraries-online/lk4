@@ -49,7 +49,7 @@ sub resolve {
     $path_info =~ tr{/}{/}s;
     my @path = ($path_info =~ m{(/[^/]+)}g);
 
-    # Look for a scope under which to redirect
+    # Look for a context under which to redirect
     # For example, we might have this in a config file:
     #   under /proxy {
     #       forward ...
