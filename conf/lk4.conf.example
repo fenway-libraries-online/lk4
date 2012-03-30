@@ -28,3 +28,6 @@ function library_name(library) {
     wheelock -> Wheelock College
 }
 
+forward /help/foo to http://help.example.com/this-is-foo<$query_string>
+forward /help     to http://help.example.com/
+forward /help/<*> to http://help.example.com/<*>
