@@ -1,42 +1,42 @@
 .PHONY: build install clean dist distclean
 
-PROG = l4x
+PROG = lk4
 VERSION = 0.01
 
-SOURCES = Makefile README LICENSE l4x.fcgi bin conf doc lib
+SOURCES = Makefile README LICENSE lk4.fcgi bin conf doc lib
 
 PREFIX = /usr/local
 
 INSTALL_PERL_LIB = $(PREFIX)/lib/site_perl
-INSTALL_L4X	     = $(PREFIX)/l4x
+INSTALL_LK4	     = $(PREFIX)/lk4
 
 build:
 
 install: install-perl-lib install-perl-doc install-conf install-data install-bin install-doc
 
-install-perl-lib: lib/L4x.pm
+install-perl-lib: lib/Lk4.pm
 	mkdir -p $(INSTALL_PERL_LIB)/
 	cp -p $< $(INSTALL_PERL_LIB)/
 
-install-perl-doc: lib/L4x.pod
+install-perl-doc: lib/Lk4.pod
 	mkdir -p $(INSTALL_PERL_LIB)/
 	cp -p $< $(INSTALL_PERL_LIB)/
 
 install-conf: conf
-	mkdir -p $(INSTALL_L4X)/conf
-	cp -p -R $< $(INSTALL_L4X)/
+	mkdir -p $(INSTALL_LK4)/conf
+	cp -p -R $< $(INSTALL_LK4)/
 
 install-data: data
-	mkdir -p $(INSTALL_L4X)/data
-	cp -p -R $< $(INSTALL_L4X)/
+	mkdir -p $(INSTALL_LK4)/data
+	cp -p -R $< $(INSTALL_LK4)/
 
 install-bin: bin
-	mkdir -p $(INSTALL_L4X)/bin
-	cp -p -R $< $(INSTALL_L4X)/
+	mkdir -p $(INSTALL_LK4)/bin
+	cp -p -R $< $(INSTALL_LK4)/
 
 install-doc: doc
-	mkdir -p $(INSTALL_L4X)/doc
-	cp -p -R $< $(INSTALL_L4X)/
+	mkdir -p $(INSTALL_LK4)/doc
+	cp -p -R $< $(INSTALL_LK4)/
 
 clean:
 

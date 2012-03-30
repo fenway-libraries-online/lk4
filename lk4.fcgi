@@ -5,7 +5,7 @@ use warnings;
 
 use lib 'lib';
 
-use L4x;
+use Lk4;
 use CGI::Fast qw(:cgi escapeHTML);
 
 my %status2msg = (
@@ -15,22 +15,22 @@ my %status2msg = (
 );
 
 my %config = (
-    'config_file' => $ENV{'L4X_CONFIG_FILE'} || 'conf/l4x.conf',
-    'data_dir'    => $ENV{'L4X_DATA_DIR'}    || 'data',
+    'config_file' => $ENV{'LK4_CONFIG_FILE'} || 'conf/lk4.conf',
+    'data_dir'    => $ENV{'LK4_DATA_DIR'}    || 'data',
 );
-$config{'config_dir'} = $ENV{'L4X_CONFIG_DIR'} if exists $ENV{'L4X_CONFIG_DIR'};
+$config{'config_dir'} = $ENV{'LK4_CONFIG_DIR'} if exists $ENV{'LK4_CONFIG_DIR'};
 
-my $l4x = L4x->new(%config);
+my $lk4 = Lk4->new(%config);
 
 if (@ARGV == 1) {
-	# Debugging mode: l4x.fcgi /uri/path/required/here?optional&query&string
+	# Debugging mode: lk4.fcgi /uri/path/required/here?optional&query&string
 	# Make CGI::Fast happy by ensuring the command-line arg ends in ?
 	$ARGV[0] =~ s/\??$/?/;
 }
 
 while (my $q = CGI::Fast->new) {
 	my $req = $q->url('-absolute' => 1, '-path_info' => 1, '-query' => 1);
-    my %result = $l4x->resolve($req);
+    my %result = $lk4->resolve($req);
     my ($ok, $status, $uri, $menu) = @result{qw(ok status uri menu)};
 	if (defined $uri) {
 		print_redirect($uri, $status);

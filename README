@@ -1,5 +1,5 @@
-L4x is a simple but powerful link forwarding utility.  It consists of a Perl
-module (L4x.pm) and a FastCGI script that together respond to HTTP requests
+Lk4 is a simple but powerful link forwarding utility.  It consists of a Perl
+module (Lk4.pm) and a FastCGI script that together respond to HTTP requests
 with the appropriate redirection.  Configuration is done using a simple config
 files and may be driven by look-up tables (flat text files or BerkeleyDB files)
 as well.
@@ -17,16 +17,16 @@ when installing:
     sudo make install PREFIX=/path/to/install/root
 
 Note that the Perl module and its documentation are installed in
-$PREFIX/perl/site_perl while all other files are installed under $PREFIX/l4x.
+$PREFIX/perl/site_perl while all other files are installed under $PREFIX/lk4.
 To change this, you must edit Makefile.
 
 ________________________________________________________________________________
 COPYRIGHT
 
-L4x is Copyright (c) 2012 Fenway Libraries Online.
+Lk4 is Copyright (c) 2012 Fenway Libraries Online.
 
 ________________________________________________________________________________
 LICENSE
 
-L4x is made available under the terms of the GNU General Public License,
+Lk4 is made available under the terms of the GNU General Public License,
 version 2.  See the file LICENSE in this distribution for details.

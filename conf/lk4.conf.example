@@ -1,4 +1,4 @@
-let data_root = /var/local/l4x
+let data_root = /var/local/lk4
 
 list all_libraries {
     eds

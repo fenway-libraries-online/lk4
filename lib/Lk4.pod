@@ -1,22 +1,22 @@
 =head1 NAME
 
-L4x - rule- and data-based transformation of URLs
+Lk4 - rule- and data-based transformation of URLs
 
 =head1 SYNOPSIS
 
-    use L4x;
-    $l4x = L4x->new(
+    use Lk4;
+    $lk4 = Lk4->new(
         'config_file' => $conf,
         'data_dir'    => $dir,
         ...
     );
-    $l4x->let('$foo' => 'bar');
-    $l4x->let('foo(bar)' => \&baz);
-    %result = $l4x->resolve('/absolute/uri/path');
+    $lk4->let('$foo' => 'bar');
+    $lk4->let('foo(bar)' => \&baz);
+    %result = $lk4->resolve('/absolute/uri/path');
 
 =head1 DESCRIPTION
 
-B<L4x> resolves URIs into target URIs.
+B<Lk4> resolves URIs into target URIs.
 
 It is suitable for use in a general link redirection service.
 
@@ -26,7 +26,7 @@ It is suitable for use in a general link redirection service.
 
 =item B<new>
 
-    $l4x = L4x->new(
+    $lk4 = Lk4->new(
         'config_file' => $conf,
         'data_dir'    => $dir,
         ...
@@ -35,9 +35,9 @@ It is suitable for use in a general link redirection service.
 Which config files are read may be overridden by specifying C<config_file> or
 C<config_dir> arguments (or both):
 
-    $l4x = L4x->new(
-        'config_file' => '/etc/l4x/foo/main.conf',
-        'config_dir'  => '/etc/l4x/foo/includes',
+    $lk4 = Lk4->new(
+        'config_file' => '/etc/lk4/foo/main.conf',
+        'config_dir'  => '/etc/lk4/foo/includes',
     );
 
 If B<config_file> is used but not B<config_dir>, then B<config_dir> will be set
@@ -48,19 +48,19 @@ or they will be ignored.
 
 =item B<read_config_file>
 
-    $l4x->read_config_file($f);
+    $lk4->read_config_file($f);
 
 =item B<let>
 
-    $l4x->let('$foo' => 'bar');
-    $l4x->let('foo(bar)' => \&baz);
+    $lk4->let('$foo' => 'bar');
+    $lk4->let('foo(bar)' => \&baz);
 
 Define a variable or function.  This is not normally required, as you can
 accomplish the same thing using a Perl function in a config file.
 
 =item B<resolve>
 
-    %result = $l4x->resolve($uri);
+    %result = $lk4->resolve($uri);
     if (!$result{ok}) {
         print "Error: $result{message}\n";
     }
@@ -142,9 +142,9 @@ Default config files are as follows:
 
 =over 4
 
-=item B</usr/local/l4x/conf/l4x.conf>
+=item B</usr/local/lk4/conf/lk4.conf>
 
-=item B</usr/local/l4x/conf/l4x.d/*.conf>
+=item B</usr/local/lk4/conf/lk4.d/*.conf>
 
 =back
 

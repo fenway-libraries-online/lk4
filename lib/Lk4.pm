@@ -1,4 +1,4 @@
-package L4x;
+package Lk4;
 
 use strict;
 use warnings;
@@ -15,8 +15,8 @@ sub new {
     my %config;
     my %file2data;
     my $self = bless {
-        'config_file' => '/etc/l4x/l4x.conf',
-        'data_dir'    => '/var/local/l4x',
+        'config_file' => '/etc/lk4/lk4.conf',
+        'data_dir'    => '/var/local/lk4',
         %arg,
         'contexts'    => \@contexts,
         'config'      => \%config,
