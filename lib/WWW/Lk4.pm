@@ -12,14 +12,14 @@ use constant KEYJOINER => "\x1c";
 sub new {
     my ($cls, %arg) = @_;
     my @contexts = ( { 'name' => '$self', 'stash' => {} } );
-    my %config;
+    my %scopes;
     my %file2data;
     my $self = bless {
         'config_file' => '/etc/lk4/lk4.conf',
         'data_dir'    => '/var/local/lk4',
         %arg,
         'contexts'    => \@contexts,
-        'config'      => \%config,
+        'scopes'      => \%scopes,
         'file2data'   => \%file2data,
     }, $cls;
     $self->load_config;
@@ -56,11 +56,11 @@ sub resolve {
     #       forward ...
     #   }
     undef $path_info;
-    my $under;
-    my $config = $self->{'config'};
+    my $scope;
+    my $scopes = $self->{'scopes'};
     foreach (reverse 0..$#path) {
         my $str = join '', @path[0..$_];
-        next if !defined ($under = $config->{$str});
+        next if !defined ($scope = $scopes->{$str});
         splice @path, 0, $_ + 1;
         $path_info = join '', @path;
         $path_info =~ s{(?<=.)/$}{};
@@ -72,12 +72,12 @@ sub resolve {
         'name' => '$request',
         'stash' => \%env,
     };
-    my $forwards = $under->{'forwards'};
+    my $forwards = $scope->{'forwards'};
     my %result = ('ok' => 0);
     foreach (@$forwards) {
         my $result;
         eval {
-            $result = $_->($under, $path_info, $query_string);
+            $result = $_->($scope, $path_info, $query_string);
             if (defined $result) {
                 $result{'ok'} = 1;
                 if (ref($result) eq 'HASH') {
@@ -107,7 +107,7 @@ sub let {
 sub read_config_file {
     my ($self, $f) = @_;
     open my $fh, '<', $f or die "Can't open config file $f: $!";
-    my $config = $self->{'config'};
+    my $scopes = $self->{'scopes'};
     my $contexts = $self->{'contexts'};
     while (<$fh>) {
         normalize($_);
@@ -117,7 +117,7 @@ sub read_config_file {
             $stash->{$1} = $self->compile_general_expression($2);
         }
         elsif (/^under (\S+) {$/) {
-            my $context = $config->{$1} = {
+            my $context = $scopes->{$1} = {
                 'name' => $1,
                 'stash' => {},
                 'patterns' => {},
@@ -314,11 +314,11 @@ sub compile_forward {
     $spec = qr/^$spec$/;
     return sub {
         my @debug = ($self, $contexts, $spec, $from, $to, $status);  # Just for debugging
-        my ($under, $path_info, $query_string) = @_;
+        my ($scope, $path_info, $query_string) = @_;
         my @m = ( $path_info =~ $spec );
         return if !@m;
         my @k = @keys;
-        my %context = map { %{ $_->{'stash'} } } (@$contexts, $under);
+        my %context = map { %{ $_->{'stash'} } } (@$contexts, $scope);
         while (@k && @m) {
             my $k = shift @k;
             my $m = shift @m;
@@ -488,7 +488,7 @@ sub compile_list {
 sub load_config {
     my ($self) = @_;
     my $root = { 'name' => '', 'stash' => {} };
-    $self->{'config'} = { '' => $root };
+    $self->{'scopes'} = { '' => $root };
     push @{ $self->{'contexts'} }, $root;
     my $cfile = $self->{'config_file'};
     my $cdir  = $self->{'config_dir'};
