@@ -3,8 +3,6 @@
 use strict;
 use warnings;
 
-use lib 'lib';
-
 use WWW::Lk4;
 use CGI::Fast qw(:cgi escapeHTML);
 use CGI::Cookie;
