@@ -124,7 +124,7 @@ sub read_config_file {
             my $context = $config->{$1} = {
                 'name' => $1,
                 'context' => {},
-                'patterns' => { '*' => qr/.*/ },
+                'patterns' => {},
             };
             push @$contexts, $context;
         }
