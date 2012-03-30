@@ -247,10 +247,9 @@ sub compile_menu {
         return $key, sub {
             my @debug = ($spec, $key, @params);  # Just for debugging
             my ($c) = @_;
-            $_->{'uri'} = evaluate($_->{uri}, $c) for @items;
             return {
                 %menu,
-                'items' => \@items,
+                'items' => [ map { evaluate($_, $c) } @items ],
             };
         };
     }
@@ -259,20 +258,12 @@ sub compile_menu {
             my @debug = ($spec, $key, @params, $var, $list, $uri, $label);  # Just for debugging
             my ($c) = @_;
             my @list = @{ $c->{$list} || die "No such list: $list" };
-            if (!@items) {
-                my $prev = $c->{$var};
-                @items = map {
-                    $c->{$var} = $_;
-                    {
-                        'uri' => evaluate($uri, $c),
-                        'label' => evaluate($label, $c),
-                    }
-                } @list;
-                $c->{$var} = $prev;
-            }
             return {
                 %menu,
-                'items' => \@items,
+                'items' => [ map {
+                    my %c = ( %$c, $var => $_ );
+                    evaluate(+{'uri' => $uri, 'label' => $label}, \%c);
+                } @list ],
             }
         };
     }
@@ -459,6 +450,7 @@ sub evaluate {
     my ($x, $c) = @_;
     my $r = ref $x;
     return $x->($c) if $r eq 'CODE';
+    return { map { $_ => evaluate($x->{$_}, $c) } keys %$x } if $r eq 'HASH';
     return $x;
 }
 
