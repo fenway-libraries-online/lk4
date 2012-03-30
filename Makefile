@@ -3,7 +3,7 @@
 PROG = l4x
 VERSION = 0.01
 
-SOURCES = README LICENSE l4x.fcgi bin conf doc lib
+SOURCES = Makefile README LICENSE l4x.fcgi bin conf doc lib
 
 PREFIX = /usr/local
 
