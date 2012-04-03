@@ -41,7 +41,10 @@ clean:
 
 # --- Distribution targets
 
-dist: $(PROG)-$(VERSION).tar.gz
+dist: VERSION $(PROG)-$(VERSION).tar.gz
+
+VERSION: Makefile
+	@echo "This is lk4 version $(VERSION)." > $@
 
 $(PROG)-$(VERSION).tar.gz: $(PROG)-$(VERSION)
 	tar -czf $@ $<
@@ -53,3 +56,4 @@ $(PROG)-$(VERSION):
 distclean:
 	rm -f  $(PROG)-$(VERSION).tar.gz
 	rm -Rf $(PROG)-$(VERSION)
+
