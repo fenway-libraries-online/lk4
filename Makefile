@@ -3,28 +3,23 @@
 PROG = lk4
 VERSION = 0.03
 
-SOURCES = Makefile README LICENSE lk4.fcgi bin conf data doc lib
+SOURCES = Makefile README LICENSE bin cgi-bin conf data doc lib service
 
 PREFIX = /usr/local
 
-INSTALL_PERL_LIB = $(PREFIX)/lib/site_perl
-INSTALL_LK4	     = $(PREFIX)/lk4
+INSTALL_LK4	= $(PREFIX)/lk4
 
 build:
 
-install: install-perl-lib install-perl-doc install-fcgi install-conf install-data install-bin install-doc
+install: install-lib install-cgi-bin install-conf install-data install-bin install-doc
 
-install-perl-lib: lib/WWW/Lk4.pm
-	mkdir -p $(INSTALL_PERL_LIB)/WWW
-	cp -p $< $(INSTALL_PERL_LIB)/WWW/
+install-lib: lib
+	mkdir -p $(INSTALL_LK4)/lib
+	cp -p -R $< $(INSTALL_LK4)/
 
-install-perl-doc: lib/WWW/Lk4.pod
-	mkdir -p $(INSTALL_PERL_LIB)/WWW
-	cp -p $< $(INSTALL_PERL_LIB)/WWW/
-
-install-fcgi: lk4.fcgi
+install-cgi-bin: cgi-bin
 	mkdir -p $(INSTALL_LK4)/cgi-bin
-	cp -p -R $< $(INSTALL_LK4)/cgi-bin/
+	cp -p -R $< $(INSTALL_LK4)/
 
 install-conf: conf
 	mkdir -p $(INSTALL_LK4)/conf
