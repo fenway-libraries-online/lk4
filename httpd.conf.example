@@ -1,0 +1,10 @@
+<VirtualHost *:80>
+    ServerName link.example.com
+    DocumentRoot /var/www/html/lk4
+    AliasMatch (.*) /usr/local/lk4/cgi-bin/lk4.fcgi$1
+    FastCgiExternalServer /usr/local/lk4/cgi-bin/lk4.fcgi -socket lk4 -nph
+    ErrorLog /var/local/lk4/error.log
+    LogLevel warn
+    CustomLog /var/local/lk4/access.log combined
+</VirtualHost>
+
