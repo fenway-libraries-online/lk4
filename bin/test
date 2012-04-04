@@ -1,0 +1,2 @@
+#!/bin/sh
+LK4_CONFIG_FILE=conf/lk4.conf.example LK4_CONFIG_DIR=conf/lk4.d.example perl -Ilib cgi-bin/lk4.fcgi "$@"
