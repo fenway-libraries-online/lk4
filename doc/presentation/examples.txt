@@ -1,0 +1,60 @@
+(*) Simple, hard-coded redirect
+
+    forward /helpdesk to http://www.fenline.org/oozv173
+
+(*) And so on
+
+    forward /staff/walter to http://www.flo.org/users/walter
+    forward /staff/kelly  to http://www.flo.org/users/kelly
+    forward /staff/paul   to http://www.flo.org/users/paul
+
+(*) Group them together
+
+    under /staff {
+        forward /walter to http://www.flo.org/users/walter
+        forward /kelly  to http://www.flo.org/users/kelly
+        forward /paul   to http://www.flo.org/users/paul
+    }
+
+(*) Parameterize
+
+    under /staff {
+        let base = http://www.flo.org/users
+        forward /walter to <base>/walter
+        forward /kelly  to <base>/kelly
+        forward /paul   to <base>/paul
+    }
+
+(*) More!
+
+    under /staff {
+        let base = http://www.flo.org/users
+        forward /<user> to <base>/<user>
+    }
+
+(*) Limit user names
+
+    under /staff {
+        let base = http://www.flo.org/users
+        match user to walter|kelly|paul
+        forward /<user> to <base>/<user>
+    }
+
+(*) Fallback [not yet implemented]
+
+    under /staff {
+        let base = http://www.flo.org/users
+        match user to walter|kelly|paul
+        forward /<user> to <base>/<user>
+        forward /<*>    to http://link.flo.org/helpdesk
+    }
+
+(*) Better [not yet implemented]
+
+    under /staff {
+        let base = http://www.flo.org/users
+        match user to walter|kelly|paul
+        forward /<user> to <base>/<user>
+        forward /<*>    to /helpdesk
+    }
+
