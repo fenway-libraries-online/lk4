@@ -1,9 +1,9 @@
 .PHONY: build install clean dist distclean
 
 PROG = lk4
-VERSION = 0.03
+VERSION = 0.04
 
-SOURCES = Makefile README LICENSE bin cgi-bin conf data doc lib service
+SOURCES = Makefile LICENSE README VERSION bin cgi-bin conf data doc lib service
 
 PREFIX = /usr/local
 
