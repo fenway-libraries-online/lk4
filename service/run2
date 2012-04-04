@@ -1,0 +1,6 @@
+#!/bin/sh
+
+SOCKET="/var/lib/apache2/fastcgi/lk4"
+FCGI_SCRIPT="/usr/local/lk4/cgi-bin/lk4.fcgi"
+
+exec setuidgid www-data /usr/bin/spawn-fcgi -n -s $SOCKET -- $FCGI_SCRIPT
