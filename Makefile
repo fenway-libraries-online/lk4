@@ -7,7 +7,7 @@ SOURCES = Makefile LICENSE README VERSION bin cgi-bin conf data doc lib service
 
 PREFIX = /usr/local
 
-INSTALL_LK4	= $(PREFIX)/lk4
+INSTALL_LK4 = $(PREFIX)/lk4
 
 build:
 
