@@ -99,7 +99,7 @@ sub resolve {
 }
 
 sub let {
-	my ($self, %arg) = @_;
+    my ($self, %arg) = @_;
     $self->{'contexts'}->[0]->{'stash'}{$_} = $arg{$_} for keys %arg;
     return $self;
 }
