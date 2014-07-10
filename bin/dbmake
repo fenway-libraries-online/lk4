@@ -18,14 +18,14 @@ if (-e $f) {
     open STDIN, '<', $f or die "Can't open $f: $!";
 }
 else {
-	print STDERR "Reading data from standard input\n" if $verbose;
+    print STDERR "Reading data from standard input\n" if $verbose;
 }
 
 my %db;
 my $fdest = "$f.db";
 my $ftemp = "$f.temp.$$.db";
 
-tie %db, 'DB_File', $ftemp, O_CREAT|O_RDWR, 0666, $DB_HASH;
+tie %db, 'DB_File', $ftemp, O_CREAT|O_RDWR, 0644, $DB_HASH;
 %db = () if $clear;
 
 while (<STDIN>) {
@@ -36,7 +36,7 @@ while (<STDIN>) {
 }
 
 if (-e $fdest) {
-	link $fdest, "$fdest.bak";
+    link $fdest, "$fdest.bak";
     unlink $fdest;
 }
 rename $ftemp, $fdest;
