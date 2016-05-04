@@ -1,3 +1,6 @@
+________________________________________________________________________________
+DESCRIPTION
+
 Lk4 is a simple but powerful link forwarding utility.  It consists of a Perl
 module (WWW::Lk4.pm) and a FastCGI script that together respond to HTTP
 requests with the appropriate redirection.  Configuration is done using a
@@ -5,14 +8,24 @@ simple config files and may be driven by look-up tables (flat text files or
 BerkeleyDB files) as well.
 
 ________________________________________________________________________________
+DEPENDENCIES
+
+Lk4 requires a number of Perl modules:
+
+    WWW::Lk4
+    CGI::Fast
+    CGI::Cookie
+    Template
+
+________________________________________________________________________________
 INSTALLING
 
-    [edit Makefile as needed]
+    [edit config.mk if needed (and perhaps Makefile)]
     make
     sudo make install
 
-Files are installed under /usr/local by default; to change this, specify PREFIX
-when installing:
+Files are installed under /usr/local by default; to change this, either edit
+config.mk or specify PREFIX when installing:
 
     sudo make install PREFIX=/path/to/install/root
 
@@ -23,7 +36,7 @@ To change this, you must edit Makefile.
 ________________________________________________________________________________
 COPYRIGHT
 
-Lk4 is Copyright (c) 2012 Fenway Libraries Online.
+Lk4 is Copyright 2012-2016 Fenway Libraries Online.
 
 ________________________________________________________________________________
 LICENSE

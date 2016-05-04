@@ -1,21 +1,11 @@
-.PHONY: build install clean dist distclean
+include config.mk
 
-PROG = lk4
-VERSION = 0.04
-
-SOURCES = Makefile LICENSE README VERSION bin cgi-bin conf data doc lib service
-
-PREFIX = /usr/local
-
-INSTALL_LK4 = $(PREFIX)/lk4
+VERSION = 0.10
+SOURCES = Makefile LICENSE README VERSION bin cgi-bin conf data doc service
 
 build:
 
-install: install-lib install-cgi-bin install-conf install-data install-bin install-doc
-
-install-lib: lib
-	mkdir -p $(INSTALL_LK4)/lib
-	cp -p -R $< $(INSTALL_LK4)/
+install: install-cgi-bin install-conf install-data install-bin install-doc
 
 install-cgi-bin: cgi-bin
 	mkdir -p $(INSTALL_LK4)/cgi-bin
@@ -57,3 +47,4 @@ distclean:
 	rm -f  $(PROG)-$(VERSION).tar.gz
 	rm -Rf $(PROG)-$(VERSION)
 
+.PHONY: build install clean dist distclean
