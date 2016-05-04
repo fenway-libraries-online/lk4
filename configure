@@ -1,0 +1,48 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+sub usage;
+sub fatal;
+
+my %config;
+
+# Options
+while (@ARGV && $ARGV[0] =~ /^-/) {
+    my $arg = shift;
+    if ($arg =~ /^--(prefix)=(.*)$/) {
+        $config{$1} = $2
+    }
+    elsif ($arg =~ /^--(prefix)$/) {
+        usage if !@ARGV;
+        $config{$1} = shift;
+    }
+    else {
+        usage;
+    }
+}
+
+my $os = $^O;
+my $perl = $^X;
+
+fatal "Installation on Windows must be done manually.  Good luck!"
+    if $os =~ /mswin/i;
+
+my %ok;
+open my $fh, '<', 'DEPENDENCIES' or fatal "Can't open DEPENDENCIES: $!";
+while (<$fh>) {
+    next if /^\s*(?:#.*)?$/;  # Skip comments and blank lines
+    if (/^perl modules/i) {
+        while (<$fh>) {
+            next if /^\s*(?:#.*)?$/;  # Skip comments and blank lines
+            s/^\s+|\s+$//g;
+            if (eval "use $_; 1") {
+                print(STDERR "[OK] $_\n"), $ok{$_} = 1;
+            }
+            else {
+                print(STDERR "[!!] $_ not installed\n"), $ok{$_} = 0;
+            }
+        }
+    }
+}
