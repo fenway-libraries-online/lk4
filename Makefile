@@ -1,7 +1,7 @@
 include config.mk
 
 VERSION = 0.11
-SOURCES = Makefile LICENSE README VERSION bin cgi-bin conf data doc lib service
+SOURCES = Makefile DEPENDENCIES LICENSE README VERSION configure bin cgi-bin conf data doc lib service
 
 build: $(SOURCES) lib
 	mkdir -p build
@@ -11,7 +11,7 @@ build: $(SOURCES) lib
 	    perl -i -pe 's{/usr/local/lk4}{$(INSTALL_LK4)}' build/*bin/*; \
 	fi
 
-install: install-cgi-bin install-conf install-data install-bin install-doc install-lib install-perl5lib
+install: install-cgi-bin install-conf install-data install-bin install-doc install-lib
 
 install-cgi-bin: build/cgi-bin
 	mkdir -p $(INSTALL_LK4)/cgi-bin
@@ -37,9 +37,6 @@ install-lib: build/lib
 	mkdir -p $(INSTALL_LK4)/lib
 	cp -p -R $< $(INSTALL_LK4)/
 
-install-perl5lib:
-	if [ "$(WWW_LK4_VERSION)" != installed ]; then mkdir -p $(INSTALL_LK4)/lib/perl5lib/WWW; cp -p build/lib/perl5lib/WWW/Lk4.pm $(INSTALL_LK4)/lib/perl5lib/WWW/; fi
-
 clean:
 	rm -Rf build
 
@@ -55,7 +52,7 @@ $(PROG)-$(VERSION).tar.gz: $(PROG)-$(VERSION)
 
 $(PROG)-$(VERSION):
 	mkdir -p $@
-	cp -r $(SOURCES) $@/
+	cp -r $(SOURCES) embedded $@/
 
 distclean:
 	rm -f  $(PROG)-$(VERSION).tar.gz
