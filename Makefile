@@ -1,6 +1,6 @@
 include config.mk
 
-VERSION = 0.10
+VERSION = 0.11
 SOURCES = Makefile LICENSE README VERSION bin cgi-bin conf data doc lib service
 
 build: $(SOURCES) lib
