@@ -3,10 +3,13 @@
 use strict;
 use warnings;
 
+sub stderr;
 sub usage;
 sub fatal;
 
-my %config;
+my %config = (
+    prefix => '/usr/local',   
+);
 
 # Options
 while (@ARGV && $ARGV[0] =~ /^-/) {
@@ -29,20 +32,67 @@ my $perl = $^X;
 fatal "Installation on Windows must be done manually.  Good luck!"
     if $os =~ /mswin/i;
 
-my %ok;
+stderr "\e[1mChecking dependencies...\e[0m";
+my %prereq = ( 'WWW::Lk4' => 0 );
 open my $fh, '<', 'DEPENDENCIES' or fatal "Can't open DEPENDENCIES: $!";
 while (<$fh>) {
     next if /^\s*(?:#.*)?$/;  # Skip comments and blank lines
     if (/^perl modules/i) {
         while (<$fh>) {
             next if /^\s*(?:#.*)?$/;  # Skip comments and blank lines
+            next if /WWW::Lk4/;
             s/^\s+|\s+$//g;
-            if (eval "use $_; 1") {
-                print(STDERR "[OK] $_\n"), $ok{$_} = 1;
-            }
-            else {
-                print(STDERR "[!!] $_ not installed\n"), $ok{$_} = 0;
-            }
+            $prereq{$_} = 1;
         }
     }
 }
+close $fh; undef $fh;
+my ($w) = sort { $b <=> $a } map { length } keys %prereq;
+delete $prereq{'WWW::Lk4'};
+if (eval "use WWW::Lk4; 1") {
+    stderr sprintf "  %-${w}s %s", 'WWW::Lk4', "\e[32mAlready installed\e[0m";
+    $config{'WWW-Lk4-version'} = 'installed';
+}
+else {
+    my ($dist) = reverse glob('embedded/WWW-Lk4-*.tar');
+    fatal "Can't find WWW-Lk4" if !defined $dist;
+    $dist =~ m{embedded/WWW-Lk4-(.+)\.tar$};
+    $config{'WWW-Lk4-version'} = $1;
+    stderr sprintf "  %-${w}s %s", 'WWW::Lk4', "\e[32mWill use embedded version $1\e[0m";
+}
+
+foreach my $pm (sort keys %prereq) {
+    my $msg;
+    if (eval "use $pm; 1") {
+        delete $prereq{$pm};
+        $msg = "\e[32mOK\e[0m";
+    }
+    else {
+        $msg = "\e[31;1mnot installed\e[0m";
+    }
+    stderr sprintf "  %-${w}s %s", $pm, $msg;
+}
+if (keys %prereq) {
+    stderr "\e[31;1mAt least one dependency is not met\e[0m";
+    exit 2;
+}
+stderr "\e[1mAll dependencies are met\e[0m";
+
+stderr "\e[1mBuilding config.mk...\e[0m";
+open $fh, '>', 'config.mk' or fatal "Can't create config.mk: $!";
+print $fh <<"EOS";
+PROG = lk4
+PREFIX = $config{prefix}
+INSTALL_LK4 = \$(PREFIX)/lk4
+WWW_LK4_VERSION = $config{'WWW-Lk4-version'}
+EOS
+close $fh;
+
+# --- Functions
+
+sub stderr {
+    my $msg = "@_";
+    $msg =~ s/\e\[[0-9;]+m//g if ! -t STDOUT;
+    print STDERR $msg, "\n";
+}
+

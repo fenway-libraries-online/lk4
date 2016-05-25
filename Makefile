@@ -1,33 +1,47 @@
 include config.mk
 
 VERSION = 0.10
-SOURCES = Makefile LICENSE README VERSION bin cgi-bin conf data doc service
+SOURCES = Makefile LICENSE README VERSION bin cgi-bin conf data doc lib service
 
-build:
+build: $(SOURCES) lib
+	mkdir -p build
+	cp -r $(SOURCES) build/
+	if [ "$(WWW_LK4_VERSION)" != installed ]; then \
+	    cp -r embedded/WWW-Lk4-$(WWW_LK4_VERSION)/lib build/lib/perl5lib; \
+	    perl -i -pe 's{/usr/local/lk4}{$(INSTALL_LK4)}' build/*bin/*; \
+	fi
 
-install: install-cgi-bin install-conf install-data install-bin install-doc
+install: install-cgi-bin install-conf install-data install-bin install-doc install-lib install-perl5lib
 
-install-cgi-bin: cgi-bin
+install-cgi-bin: build/cgi-bin
 	mkdir -p $(INSTALL_LK4)/cgi-bin
 	cp -p -R $< $(INSTALL_LK4)/
 
-install-conf: conf
+install-conf: build/conf
 	mkdir -p $(INSTALL_LK4)/conf
 	cp -p -R $< $(INSTALL_LK4)/
 
-install-data: data
+install-data: build/data
 	mkdir -p $(INSTALL_LK4)/data
 	cp -p -R $< $(INSTALL_LK4)/
 
-install-bin: bin
+install-bin: build/bin
 	mkdir -p $(INSTALL_LK4)/bin
 	cp -p -R $< $(INSTALL_LK4)/
 
-install-doc: doc
+install-doc: build/doc
 	mkdir -p $(INSTALL_LK4)/doc
 	cp -p -R $< $(INSTALL_LK4)/
 
+install-lib: build/lib
+	mkdir -p $(INSTALL_LK4)/lib
+	cp -p -R $< $(INSTALL_LK4)/
+
+install-perl5lib:
+	if [ "$(WWW_LK4_VERSION)" != installed ]; then mkdir -p $(INSTALL_LK4)/lib/perl5lib/WWW; cp -p build/lib/perl5lib/WWW/Lk4.pm $(INSTALL_LK4)/lib/perl5lib/WWW/; fi
+
 clean:
+	rm -Rf build
 
 # --- Distribution targets
 
