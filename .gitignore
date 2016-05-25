@@ -2,3 +2,4 @@ VERSION
 lk4-*
 config.mk
 embedded
+build
