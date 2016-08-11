@@ -1,0 +1,21 @@
+@header
+|<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+|<html>
+|<head>
+|<title>${title}</title>
+|</head>
+|<body>
+|<h1>${title}</h1>
+|<p>
+|Access to Kanopy is available via Fenway Libraries Online.
+|</p>
+|<p>
+|Select your library to watch this video.
+|</p>
+|<ul>
+@item
+|    <li><a href="${uri}" />${label}</li>
+@footer
+|</ul>
+|</body>
+|</html>

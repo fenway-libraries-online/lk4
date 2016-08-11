@@ -1,6 +1,6 @@
 include config.mk
 
-VERSION = 0.11
+VERSION = 0.12
 SOURCES = Makefile DEPENDENCIES LICENSE README VERSION configure bin cgi-bin conf data doc lib service
 
 build: $(SOURCES) lib
@@ -39,6 +39,9 @@ install-lib: build/lib
 
 clean:
 	rm -Rf build
+
+realclean: clean
+	rm -f config.mk
 
 # --- Distribution targets
 
