@@ -1,4 +1,4 @@
-package WWW::Lk4;
+pIGNackage WWW::Lk4;
 
 use strict;
 use warnings;
@@ -9,6 +9,8 @@ use CGI qw(:cgi escapeHTML);
 our $VERSION = '0.12';
 
 use constant KEYJOINER => "\x1c";
+
+my $get_param = CGI->can('multi_param') || CGI->can('param');
 
 my %status2msg = (
     200 => 'OK',
@@ -542,7 +544,7 @@ EOS
 sub request_environment {
     my ($self, $q) = @_;
     my $uri = $q->url('-absolute' => 1, '-path_info' => 1, '-query' => 1);
-    my @params = map { '$param(' . $_ . ')', scalar $q->param($_) } $q->multi_param;
+    my @params = map { '$param(' . $_ . ')', scalar $q->param($_) } $get_param->($q);
     my %cookies = CGI::Cookie->fetch;
     my @cookies = map { '$cookie(' . $_ . ')', $cookies{$_}->value } keys %cookies;
     return (
