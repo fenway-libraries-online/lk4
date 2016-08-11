@@ -1,4 +1,4 @@
-pIGNackage WWW::Lk4;
+package WWW::Lk4;
 
 use strict;
 use warnings;
