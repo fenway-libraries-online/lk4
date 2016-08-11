@@ -542,7 +542,7 @@ EOS
 sub request_environment {
     my ($self, $q) = @_;
     my $uri = $q->url('-absolute' => 1, '-path_info' => 1, '-query' => 1);
-    my @params = map { '$param(' . $_ . ')', $q->param($_) } $q->param;
+    my @params = map { '$param(' . $_ . ')', scalar $q->param($_) } $q->multi_param;
     my %cookies = CGI::Cookie->fetch;
     my @cookies = map { '$cookie(' . $_ . ')', $cookies{$_}->value } keys %cookies;
     return (
