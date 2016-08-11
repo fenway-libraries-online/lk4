@@ -3,6 +3,5 @@ Perl modules:
     WWW::Lk4
     CGI::Fast
     CGI::Cookie
-    Template
     URI
 
