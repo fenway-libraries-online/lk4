@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use DB_File;
+use CGI qw(:cgi escapeHTML);
 
 our $VERSION = '0.12';
 
