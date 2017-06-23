@@ -244,6 +244,9 @@ sub compile_menu {
         elsif (/^(title|template) (.+)$/) {
             $menu{$1} = $2;
         }
+        elsif (/^let (\S+) = (.+)$/) {
+            $menu{$1} = $2;
+        }
         elsif (/^item (\S+) (.+)$/) {
             my ($uri, $label) = ($1, $2);
             push @items, {
@@ -380,6 +383,19 @@ sub compile_menu_expression {
     else {
         die;
     }
+}
+
+sub compile_file_expression {
+    my ($self, $file) = @_;
+    return sub {
+        my @debug = ($self, $file);  # Just for debugging
+        my $f = $self->find_file($file) or die;
+        open my $fh, '<', $f or die;
+        local $_;
+        my $output = <$fh>;  # TODO perform substitutions
+        close $fh or die;
+        return $output;
+    };
 }
 
 sub compile_function_from_file {
@@ -640,6 +656,13 @@ sub find_menu {
     my ($self, $name) = @_;
     foreach (grep { defined $_ } $self->{'config_dir'}, basename($self->{'config_file'})) {
         return "$_/$name.menu" if -f "$_/$name.menu";
+    }
+}
+
+sub find_file {
+    my ($self, $name) = @_;
+    foreach (grep { defined $_ } $self->{'config_dir'}, basename($self->{'config_file'})) {
+        return "$_/$name" if -f "$_/$name";
     }
 }
 
